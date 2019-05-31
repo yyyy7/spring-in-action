@@ -19,6 +19,7 @@ public class JdbcOrderRepository implements OrderRepository {
   private SimpleJdbcInsert orderTacoInserter;
   private ObjectMapper objectMapper;
 
+  
   @Autowired
   public JdbcOrderRepository(JdbcTemplate jdbc) {
     this.orderInserter = new SimpleJdbcInsert(jdbc).withTableName("Taco_Order").usingGeneratedKeyColumns("id");
