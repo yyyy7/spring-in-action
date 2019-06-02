@@ -13,7 +13,6 @@ import tacos.Taco;
 import tacos.Order;
 
 @Repository
-public
 public class JdbcOrderRepository implements OrderRepository {
   private SimpleJdbcInsert orderInserter;
   private SimpleJdbcInsert orderTacoInserter;
@@ -31,6 +30,30 @@ public class JdbcOrderRepository implements OrderRepository {
 
   @Override
   public Order save(Order order) {
+    order.setPlacedAt(new Date());
+    long orderId = saveOrderDetails(order);
+    order.setId(orderId);
+    List<Taco> tacos = order.getTacos();
+    for (Taco taco : tacos) {
+      saveTacoToOrder(taco, orderId);
+    }
 
+    return order;
+  }
+
+  private long saveOrderDetails(Order order) {
+    @SuppressWarnings("uncheck")
+    Map<String, Object> values = objectMapper.convertValue(order, Map.class);
+    values.put("placeAt", order.getPlacedAt());
+
+    long orderId = orderInserter.executeAndReturnKey(values).longValue();
+    return orderId;
+  }
+
+  private void saveTacoToOrder(Taco taco, long orderId) {
+    Map<String, Object> values = new HashMap<>();
+    values.put("tacoOrder", orderId);
+    values.put("taco", taco.getId());
+    orderTacoInserter.execute(values);
   }
 }
